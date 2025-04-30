@@ -1,112 +1,87 @@
+-- walmart Sales Analysis Report
+
+Select * from walmart_sales;
+
+-- KPIs
+select year(date) as Year,
+		count(*) as Total_Transactions,
+        sum(total_price*profit_margin) as Total_Revenue,
+       sum(profit_margin) as Profit_Margins,
+       avg(rating) as Avg_rating from walmart_sales
+       group by Year
+       order by Year;
+
+-- Q1 Find the different payment method, number of transactions and qty sold
+
+select payment_method,
+	   count(*) as Tansactions,
+       sum(quantity) as Qty_Sold 
+       from walmart_sales
+       group by payment_method
+       order by Tansactions desc;
+       
+
+-- Q2 Identify the highest rated category in each branch. displaying the branch, category and avg rating
+
+select branch, category,avg(rating) as Avg_Rating
+	   from walmart_sales
+       group by branch,category
+       order by Avg_Rating desc;      
+       
+
+-- Q3 Identify the busiest day for each branch  based on the number of transactions
+select * from walmart_sales;
+describe walmart_sales;
 
 
-update walmart_clean_data
-SET date = STR_TO_DATE(date, '%Y-%m-%d');
-
-ALTER TABLE walmart_clean_data
-MODIFY COLUMN date DATE;
-
-update walmart_clean_data
-set time = str_to_date(time, '%H:%i:%s');
-
-
-ALTER TABLE walmart_clean_data
-MODIFY COLUMN time time; 
-
--- -- Count total records:
-
-select count(*) as Total_records from walmart_clean_data;
-
--- Count payment methods and number of transactions by payment method
-
-select payment_method , count(*) as Total_transactions from walmart_clean_data
-group by 1;
-
--- Count distinct branches
-
-select * from walmart_clean_data;
-
-select count(distinct branch) from walmart_clean_data;
-
--- -- Find the minimum quantity sold
-SELECT MIN(quantity) FROM walmart_clean_data;
-
--- Business Problem Q1: Find different payment methods, number of transactions, and quantity sold by payment method
-select * from walmart_clean_data;
-
-select payment_method, count(*) as Total_transactions, sum(quantity) as Total_qty_sold 
-from walmart_clean_data
-group by 1;
+select date(date) as Day ,
+	   branch as Branch, 
+       count(*) as Transactions 
+       from walmart_sales
+       where year(date)=2019 AND  month(date)=4
+       group by Day, Branch 
+       order by Transactions desc limit 7;
+       
+       
+-- Q5 determine the average, minmum and maximum rating of a product for each city.
+-- list the city, avg rating, minimum_rating, max_rating
 
 
--- Project Question #2: Identify the highest-rated category in each branch
--- Display the branch, category, and avg rating
+select city, Avg(rating) as Avg_Rating, 
+	   min(rating) as Minimum_Rating, 
+       max(rating) as Maximum_rating 
+       from walmart_sales
+       group by city
+       order by Avg_Rating desc;
+       
 
-select  branch, Average_rating  , category from
-(select branch, avg(rating) as Average_rating, quantity, category from walmart_clean_data
-group by 1,3,4
-order by 3 desc limit 1) as inter;
+-- Q6 calculate the total profit  for each category by considering tota_profit as
+-- (total_price * profit margin), list category and total profit ordered from highest to lowest profit
 
--- Q3: Identify the busiest day for each branch based on the number of transactions
+select category,
+	   round(sum(total_price * profit_margin),2) as Total_Profit 
+       from walmart_sales
+       group by category
+       order by Total_Profit desc ;
+       
+       
+-- determine the most common payment method for each branch
+-- display branch and paymentmentod
 
-select * from walmart_clean_data;
+select branch as Branch, 
+	   count(*) as Transaction,
+	   payment_method as Most_uses_Payment_method 
+       from walmart_sales
+       group by Branch,Most_uses_Payment_method;
+       
+       
+       
+-- Q8 categorize sales into 3 groups moring, afetnoon and evening
+-- find out whic of the shif and numbert of invoices
 
-select Branch, count(*) as Total_transaction,dayofweek(date) as busiest_Day from walmart_clean_data
-group by 1, 3
-order by 3,2 desc limit 1;
-
--- Q4: Calculate the total quantity of items sold per payment method
-
-select payment_method, sum(quantity) as Total_qty_sold from walmart_clean_data
-group by 1;
-
--- Q5: Determine the average, minimum, and maximum rating of categories for each city
-
-select avg(rating) as Average_Rating,
-min(rating) as Minimum_Rating ,
-max(rating) as Maximum_Rating from walmart_clean_data;
-
-SELECT 
-    AVG(rating) AS Average_Rating,
-    MIN(rating) AS Minimum_Rating,
-    MAX(rating) AS Maximum_Rating
-FROM walmart_clean_data;
-
--- -- Q6: Calculate the total profit for each category
-select * from walmart_clean_data;
-
-SELECT 
-    category,
-    SUM(unit_price * quantity * profit_margin) AS total_profit
-FROM walmart_clean_data
-GROUP BY category
-ORDER BY total_profit DESC;
-
-SELECT 
-   
-   (unit_price * quantity * profit_margin) AS total_profit
-FROM walmart_clean_data
-;
-
--- Q7: Determine the most common payment method for each branch
-
-select payment_method as Most_common_patment_method, count(*) as Total_transactions from walmart_clean_data
-group by 1 order by 2 desc limit 1;
-
-
--- Q8: Categorize sales into Morning, Afternoon, and Evening shifts
-select * from walmart_clean_data;
- 
  select case
 	when hour(time)<12 then 'Morning Shift'
     when hour(time) between 12 and 17 then 'Afternoon Shift'
     else 'Evening Shift'
-    end as Day_Shift, sum(quantity) as Total_qty_sold from walmart_clean_data
+    end as Day_Shift, sum(quantity) as Total_qty_sold from walmart_sales
     group by 1;
-    
-    
-   
-
-
-
-
